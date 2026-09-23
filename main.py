@@ -4,6 +4,8 @@ from src.signal_generation import generate_received_signal
 
 from src.covariance import calculate_covariance_matrix
 
+from src.eigendecomposition import calculate_eigendecomposition
+
 NUM_ELEMENTS = 8
 NUM_SAMPLES = 1000
 
@@ -11,7 +13,7 @@ WAVELENGTH = 1.0
 SPACING = WAVELENGTH / 2
 
 DOA = 30.0
-SNR_DB = 10.0
+SNR_DB = 20.0
 
 
 received_signal = generate_received_signal(
@@ -24,6 +26,16 @@ received_signal = generate_received_signal(
 )
 
 covariance_matrix = calculate_covariance_matrix(received_signal)
+
+eigenvalues, eigenvectors = calculate_eigendecomposition(
+    covariance_matrix
+)
+
+print("\nEigenvalues:")
+print(eigenvalues)
+
+print("\nEigenvector matrix shape:")
+print(eigenvectors.shape)
 
 print("\nCovariance matrix shape:")
 print(covariance_matrix.shape)
