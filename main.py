@@ -10,6 +10,7 @@ WAVELENGTH = 1.0
 SPACING = WAVELENGTH / 2
 
 DOA = 30.0
+SNR_DB = 10.0
 
 
 received_signal = generate_received_signal(
@@ -17,12 +18,16 @@ received_signal = generate_received_signal(
     num_samples=NUM_SAMPLES,
     spacing=SPACING,
     wavelength=WAVELENGTH,
-    angle_deg=DOA
+    angle_deg=DOA,
+    snr_db=SNR_DB
 )
 
 
 print("Received signal shape:")
 print(received_signal.shape)
+
+print("\nSNR:")
+print(f"{SNR_DB} dB")
 
 print("\nFirst sample from each antenna:")
 print(received_signal[:, 0])
