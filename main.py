@@ -2,6 +2,7 @@ import numpy as np
 
 from src.signal_generation import generate_received_signal
 
+from src.covariance import calculate_covariance_matrix
 
 NUM_ELEMENTS = 8
 NUM_SAMPLES = 1000
@@ -22,6 +23,13 @@ received_signal = generate_received_signal(
     snr_db=SNR_DB
 )
 
+covariance_matrix = calculate_covariance_matrix(received_signal)
+
+print("\nCovariance matrix shape:")
+print(covariance_matrix.shape)
+
+print("\nCovariance matrix:")
+print(covariance_matrix)
 
 print("Received signal shape:")
 print(received_signal.shape)
