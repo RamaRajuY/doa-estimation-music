@@ -145,7 +145,7 @@ e^{-j2\pi\frac{(M-1)d}{\lambda}\sin(\theta)}
 \end{bmatrix}
 $$
 
-
+    
 In the Python code, I generate this vector in:
 
 ```text
@@ -509,7 +509,7 @@ The estimated DOA was:
 
 The resulting MUSIC spectrum shows a clear peak around 30 degrees.
 
-![Single-source MUSIC spectrum](results/music_spectrum.png)
+![Single-source MUSIC spectrum](results/music_spectrum_one_source.png)
 
 ---
 
