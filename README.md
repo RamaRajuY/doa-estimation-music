@@ -134,23 +134,17 @@ The steering vector describes the phase relationship across all the antenna elem
 
 For a ULA with `M` elements:
 
-```math
-
+$$
 \mathbf{a}(\theta)=
-
 \begin{bmatrix}
-
 1 \\
-
 e^{-j2\pi\frac{d}{\lambda}\sin(\theta)} \\
-
-e^{-j2\pi\frac{2d}{\lambda}\sin(\theta)} \\\n\vdots \\
-
+e^{-j2\pi\frac{2d}{\lambda}\sin(\theta)} \\
+\vdots \\
 e^{-j2\pi\frac{(M-1)d}{\lambda}\sin(\theta)}
-
 \end{bmatrix}
+$$
 
-```
 
 In the Python code, I generate this vector in:
 
@@ -449,35 +443,20 @@ The basic process is:
 ```text
 
 Scan angle
-
     |
-
     v
-
 Generate steering vector
-
     |
-
     v
-
 Compare with noise subspace
-
     |
-
     v
-
 Calculate MUSIC value
-
     |
-
     v
-
 Move to next angle
-
     |
-
     v
-
 Find peaks
 
 ```
@@ -637,59 +616,32 @@ The complete processing chain in the current version is:
 ```text
 
 Source Signals
-
       |
-
       v
-
 ULA Steering Vectors
-
       |
-
       v
-
 Received Array Data
-
       |
-
       v
-
 Add AWGN
-
       |
-
       v
-
 Spatial Covariance Matrix
-
       |
-
       v
-
 Eigenvalue Decomposition
-
       |
-
       v
-
 Signal / Noise Subspaces
-
       |
-
       v
-
 MUSIC Pseudospectrum
-
       |
-
       v
-
 Peak Detection
-
       |
-
       v
-
 Estimated DOAs
 
 ```
@@ -865,53 +817,29 @@ Because of that, I built this project step by step:
 ```text
 
 ULA
-
  |
-
  v
-
 Steering Vector
-
  |
-
  v
-
 Signal Generation
-
  |
-
  v
-
 Noise
-
  |
-
  v
-
 Covariance Matrix
-
  |
-
  v
-
 Eigenvalue Decomposition
-
  |
-
  v
-
 MUSIC
-
  |
-
  v
-
 Single Source
-
  |
-
  v
-
 Multiple Sources
 
 ```
