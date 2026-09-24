@@ -1,10 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.signal_generation import generate_received_signal
+from src.signal_generation import generate_multiple_received_signal
 from src.covariance import calculate_covariance_matrix
 from src.eigendecomposition import calculate_eigendecomposition
-from src.music import calculate_music_spectrum, estimate_doa
+from src.music import (
+    calculate_music_spectrum,
+    estimate_multiple_doa
+)
 
 NUM_ELEMENTS = 8
 NUM_SAMPLES = 1000
@@ -12,17 +15,19 @@ NUM_SAMPLES = 1000
 WAVELENGTH = 1.0
 SPACING = WAVELENGTH / 2
 
-DOA = 30.0
-SNR_DB = 20.0
+DOAS = [-20.0, 35.0]
 
+SNR_DB = 10.0
+NUM_SOURCES = len(DOAS)
 
-received_signal = generate_received_signal(
+received_signal = generate_multiple_received_signal(
     num_elements=NUM_ELEMENTS,
     num_samples=NUM_SAMPLES,
     spacing=SPACING,
     wavelength=WAVELENGTH,
-    angle_deg=DOA,
-    snr_db=SNR_DB
+    angles_deg=DOAS,
+    snr_db=SNR_DB,
+    seed=42
 )
 
 covariance_matrix = calculate_covariance_matrix(received_signal)
@@ -32,7 +37,7 @@ eigenvalues, eigenvectors = calculate_eigendecomposition(
 )
 
 ANGLE_GRID = np.linspace(-90.0, 90.0, 1801)
-NUM_SOURCES = 1
+NUM_SOURCES = len(DOAS)
 
 
 music_spectrum = calculate_music_spectrum(
@@ -45,14 +50,16 @@ music_spectrum = calculate_music_spectrum(
 )
 
 
-estimated_doa = estimate_doa(
-    ANGLE_GRID,
-    music_spectrum
+estimated_doas = estimate_multiple_doa(
+    angle_grid=ANGLE_GRID,
+    music_spectrum=music_spectrum,
+    num_sources=NUM_SOURCES
 )
 
+print("\nEstimated DOAs:")
 
-print("\nEstimated DOA:")
-print(f"{estimated_doa:.1f} degrees")
+for doa in estimated_doas:
+    print(f"{doa:.1f} degrees")
 
 # Normalize the MUSIC spectrum and convert to dB
 music_spectrum_db = 10 * np.log10(
@@ -68,11 +75,12 @@ plt.plot(
     label="MUSIC Spectrum"
 )
 
-plt.axvline(
-    estimated_doa,
-    linestyle="--",
-    label=f"Estimated DOA = {estimated_doa:.1f}°"
-)
+for doa in estimated_doas:
+    plt.axvline(
+        doa,
+        linestyle="--",
+        label=f"Estimated DOA = {doa:.1f}°"
+    )
 
 plt.xlabel("Angle (degrees)")
 plt.ylabel("Normalized MUSIC Spectrum (dB)")
