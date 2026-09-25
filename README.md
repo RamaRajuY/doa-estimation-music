@@ -692,7 +692,143 @@ experiments/doa_vs_snr.py
 ```
 ---
 
-# 14. Complete Processing Flow
+# 14. MUSIC Angular Resolution Study
+
+After testing the effect of SNR on the DOA estimation error, I wanted to check how close two signal sources can be before the MUSIC algorithm has difficulty distinguishing them.
+
+For this experiment, I kept the first source fixed at:
+
+$$
+
+\theta_1 = 10^\circ
+
+$$
+
+and moved the second source closer to it.
+
+The angular separations tested were:
+
+```text
+
+20°
+
+10°
+
+5°
+
+2°
+
+1°
+
+```
+
+The main parameters used in this experiment were:
+
+```text
+
+Number of antennas : 8
+
+Element spacing    : 0.5 λ
+
+Snapshots          : 1000
+
+SNR                : 10 dB
+
+First DOA          : 10°
+
+Number of sources  : 2
+
+```
+
+For each case, I generated two independent signals and passed them through the same ULA signal model used in the previous experiments.
+
+The MUSIC pseudospectrum was then calculated and the two strongest distinct peaks were used for the DOA estimation.
+
+## Resolution Criterion
+
+For this experiment, I used a maximum allowed DOA error of:
+
+$$
+
+0.5^\circ
+
+$$
+
+A case is considered **resolved** when both detected DOAs are within `0.5°` of their corresponding true DOAs.
+
+This is the criterion used for this particular simulation. It should not be considered a universal resolution limit for MUSIC because DOA resolution also depends on factors such as the number of antenna elements, SNR, number of snapshots, array spacing and source characteristics.
+
+## Results
+
+The results obtained from the simulation are:
+
+| Angular Separation | True DOAs | Estimated DOAs | Maximum DOA Error | Resolution |
+
+|---:|---|---|---:|---|
+
+| 20° | 10°, 30° | 10°, 30° | 0.00° | Resolved |
+
+| 10° | 10°, 20° | 10°, 20.15° | 0.15° | Resolved |
+
+| 5° | 10°, 15° | 10.05°, 15.10° | 0.10° | Resolved |
+
+| 2° | 10°, 12° | -16°, 10.55° | 26.00° | Not resolved |
+
+| 1° | 10°, 11° | -15.95°, 10.50° | 25.95° | Not resolved |
+
+The results show that, under the conditions used in this experiment, the two sources were correctly resolved for angular separations of `20°`, `10°` and `5°`.
+
+For the `2°` and `1°` cases, the two sources were not correctly resolved.
+
+For example, when the true directions were:
+
+$$
+
+\theta_1 = 10^\circ
+
+$$
+
+and
+
+$$
+
+\theta_2 = 12^\circ
+
+$$
+
+the estimated directions were approximately:
+
+```text
+
+-16.0°
+
+10.55°
+
+```
+
+The `-16°` peak does not correspond to an actual source in the simulation. It is a spurious peak selected by the peak-detection method when the two sources could not be correctly separated.
+
+This is an important limitation to observe because the algorithm should not be evaluated only using successful cases.
+
+## MUSIC Spectrum for Different Angular Separations
+
+The figure below shows how the MUSIC pseudospectrum changes as the angular separation between the two sources decreases.
+
+![MUSIC angular resolution study](results/music_angular_resolution_study.png)
+
+For larger angular separations, two distinct peaks can be clearly observed.
+
+As the sources become closer, the peaks become less separated. At `2°` and `1°` separation, the two sources are no longer correctly distinguished under the conditions used in this simulation.
+
+The experiment is implemented in:
+
+```text
+
+experiments/angular_resolution.py
+
+```
+
+# 15. Complete Processing Flow
 
 The complete processing chain in the current version is:
 
@@ -739,7 +875,7 @@ S \rightarrow A \rightarrow X = AS + N \rightarrow R_{xx} \rightarrow E,\Lambda 
 
 ---
 
-# 15. Project Structure
+# 16. Project Structure
 
 The current project is organized as:
 
@@ -798,7 +934,7 @@ Stores the generated experiment results.
 
 ---
 
-# 16. Technologies Used
+# 17. Technologies Used
 
 - Python 3
 
@@ -812,7 +948,7 @@ Stores the generated experiment results.
 
 ---
 
-# 17. Running the Project
+# 18. Running the Project
 
 Clone the repository:
 
@@ -850,7 +986,7 @@ The program generates the MUSIC spectrum and saves the result in the `results` f
 
 ---
 
-# 18. What I Want to Add Next
+# 19. What I Want to Add Next
 
 This project is still a work in progress.
 
@@ -876,7 +1012,7 @@ The longer-term goal is to move from this basic 1D ULA implementation toward mor
 
 ---
 
-# 19. Why I Built This Project
+# 20. Why I Built This Project
 
 I am interested in RF systems, antenna arrays, radar signal processing and sensing.
 
