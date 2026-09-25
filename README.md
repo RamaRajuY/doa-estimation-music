@@ -579,34 +579,117 @@ This shows two separate peaks in the MUSIC spectrum.
 
 ---
 
-# 13. DOA Estimation Error
+# 13. DOA Estimation Error versus SNR
 
-I calculate the estimation error by comparing the estimated direction with the known direction used in the simulation.
+After testing MUSIC with one source and two sources, I wanted to check how the accuracy changes when the signal becomes weaker compared with the noise.
 
-```math
+For this experiment, I kept the same two signal directions:
 
-e = \hat{\theta} - \theta_{true}
+$$
+\theta_1=-20^\circ
+$$
 
+$$
+\theta_2=35^\circ
+$$
+
+I tested the algorithm at different SNR values.
+
+The SNR values used were:
+
+```text
+-10 dB
+ -5 dB
+  0 dB
+  5 dB
+ 10 dB
+ 15 dB
+ 20 dB
 ```
 
-For the current two-source experiment:
+For each SNR value, I ran the simulation for 50 different noise realizations.
 
-```math
+The main parameters were:
 
-e_1 = -20.0^\circ - (-20.0^\circ) = 0.0^\circ
-
+```text
+Number of antennas : 8
+Element spacing    : 0.5 λ
+Number of sources  : 2
+True DOAs           : -20° and 35°
+Snapshots           : 1000
+Trials per SNR      : 50
 ```
 
-and:
+For every trial, I calculated the DOA estimation error and then calculated the Root Mean Square Error (RMSE).
 
-```math
+The RMSE is calculated as:
 
-e_2 = 35.1^\circ - 35.0^\circ = 0.1^\circ
+$$
+RMSE=
+\sqrt{
+\frac{1}{N}
+\sum_{i=1}^{N}
+\left(
+\hat{\theta}_i-\theta_i
+\right)^2
+}
+$$
 
+where:
+
+- $\hat{\theta}_i$ is the estimated DOA
+- $\theta_i$ is the true DOA
+- $N$ is the number of trials
+
+## Results
+
+The results obtained from the simulation are:
+
+| SNR (dB) | Source 1 RMSE (°) | Source 2 RMSE (°) | Combined RMSE (°) |
+|----------:|------------------:|------------------:|-------------------:|
+| -10 | 0.524 | 0.668 | 0.600 |
+| -5  | 0.211 | 0.252 | 0.232 |
+| 0   | 0.102 | 0.110 | 0.106 |
+| 5   | 0.057 | 0.065 | 0.061 |
+| 10  | 0.028 | 0.035 | 0.032 |
+| 15  | 0.000 | 0.000 | 0.000 |
+| 20  | 0.000 | 0.000 | 0.000 |
+
+The results show that the DOA estimation error decreases as the SNR increases.
+
+At `-10 dB`, the noise has a much stronger effect on the received signals, and the RMSE is higher.
+
+At `10 dB`, the combined RMSE is `0.032°`.
+
+At `15 dB` and `20 dB`, the estimated DOAs landed exactly on the true angles for the angle grid used in the simulation.
+
+The angle grid used in the MUSIC search was:
+
+```text
+-90° to +90°
 ```
 
-The known direction is available here because this is a controlled simulation. In a real measurement, the true DOA would not be known in advance.
+with a step size of:
 
+$$
+0.1^\circ
+$$
+
+Therefore, an RMSE of `0.000°` means that the detected peak landed exactly on the correct point of this `0.1°` search grid in the tested trials. It does not mean that the continuous-angle estimation error is mathematically zero.
+
+## DOA Error versus SNR
+
+The following figure shows the change in DOA RMSE as the SNR is increased.
+
+![DOA estimation error versus SNR](results/doa_error_vs_snr.png)
+
+The overall trend is clear: increasing the SNR makes the spatial information easier to distinguish from noise, resulting in lower DOA estimation error for this simulation.
+
+The complete experiment is implemented in:
+
+```text
+experiments/doa_vs_snr.py
+```
 ---
 
 # 14. Complete Processing Flow
@@ -661,39 +744,26 @@ S \rightarrow A \rightarrow X = AS + N \rightarrow R_{xx} \rightarrow E,\Lambda 
 The current project is organized as:
 
 ```text
-
 doa-estimation-music/
-
-|
-
-|-- .gitignore
-
-|-- README.md
-
-|-- main.py
-
-|
-
-|-- results/
-
-|   |-- music_spectrum.png
-
-|   |-- music_spectrum_two_sources.png
-
-|
-
-|-- src/
-
-    |-- array_model.py
-
-    |-- signal_generation.py
-
-    |-- covariance.py
-
-    |-- eigendecomposition.py
-
-    |-- music.py
-
+│
+├── .gitignore
+├── README.md
+├── main.py
+│
+├── experiments/
+│   └── doa_vs_snr.py
+│
+├── results/
+│   ├── music_spectrum_one_source.png
+│   ├── music_spectrum_two_sources.png
+│   └── doa_error_vs_snr.png
+│
+└── src/
+    ├── array_model.py
+    ├── signal_generation.py
+    ├── covariance.py
+    ├── eigendecomposition.py
+    └── music.py
 ```
 
 Each file has a separate purpose.
