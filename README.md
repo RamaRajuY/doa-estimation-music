@@ -828,7 +828,175 @@ experiments/angular_resolution.py
 
 ```
 
-# 15. Complete Processing Flow
+# 15. Conventional Beamforming versus MUSIC
+
+After looking at the effect of SNR and the angular separation between sources, I wanted to compare MUSIC with a more conventional spatial spectrum method.
+
+For this experiment, I used conventional Bartlett beamforming and compared its spatial spectrum with the MUSIC pseudospectrum using the same received array data.
+
+The two source directions were:
+
+$$
+
+\theta_1=-20^\circ
+
+$$
+
+and:
+
+$$
+
+\theta_2=35^\circ
+
+$$
+
+The main parameters were:
+
+```text
+
+Number of antennas : 8
+
+Element spacing    : 0.5 λ
+
+Snapshots          : 1000
+
+Number of sources  : 2
+
+True DOAs          : -20° and 35°
+
+SNR                : 10 dB
+
+```
+
+## 15.1 Conventional Bartlett Beamforming
+
+The conventional beamforming spectrum used in this experiment is:
+
+$$
+
+P_{BF}(\theta)
+
+=
+
+\frac{
+
+\mathbf{a}^H(\theta)
+
+R_{xx}
+
+\mathbf{a}(\theta)
+
+}{
+
+\mathbf{a}^H(\theta)\mathbf{a}(\theta)
+
+}
+
+$$
+
+where:
+
+- $\mathbf{a}(\theta)$ is the steering vector.
+
+- $R_{xx}$ is the spatial covariance matrix.
+
+The implementation is available in:
+
+```text
+
+src/beamforming.py
+
+```
+
+## 15.2 MUSIC
+
+The MUSIC pseudospectrum is calculated using the noise subspace:
+
+$$
+
+P_{MUSIC}(\theta)
+
+=
+
+\frac{1}{
+
+\left|
+
+\mathbf{a}^H(\theta)
+
+E_nE_n^H
+
+\mathbf{a}(\theta)
+
+\right|
+
+}
+
+$$
+
+For this comparison, both methods use the same covariance matrix and the same angle grid.
+
+The MUSIC implementation is available in:
+
+```text
+
+src/music.py
+
+```
+
+## 15.3 Comparison Result
+
+The following figure shows the normalized spatial spectrum from conventional beamforming and the MUSIC pseudospectrum for the same two-source experiment.
+
+![Conventional Beamforming versus MUSIC](results/beamforming_vs_music.png)
+
+The conventional beamforming spectrum has broader peaks around the two source directions. The MUSIC pseudospectrum produces much sharper peaks around the same directions in this simulation.
+
+Because the two curves are normalized independently, the relative peak heights between the two methods should not be interpreted as a direct comparison of physical received power.
+
+## 15.4 -3 dB Spectral Peak Width
+
+I also measured the width of each spatial-spectrum peak at a level 3 dB below the local peak maximum.
+
+For the conventional beamforming spectrum, the measured widths were:
+
+```text
+
+Source at -20° : 13.786°
+
+Source at  35° : 15.937°
+
+```
+
+For the MUSIC pseudospectrum, the measured spectral peak widths were:
+
+```text
+
+Source at -20° : 0.153°
+
+Source at  35° : 0.349°
+
+```
+
+These values are the widths of the sampled spatial spectra used in this experiment. The MUSIC values should not be interpreted as physical antenna beamwidths because MUSIC produces a pseudospectrum rather than a conventional radiation pattern.
+
+The beamwidth calculation is implemented in:
+
+```text
+
+experiments/beamforming_vs_music.py
+
+```
+
+## 15.5 Observation
+
+Under the conditions used in this experiment, the conventional beamforming peaks were much broader than the MUSIC spectral peaks.
+
+This comparison helped me understand the difference between a conventional spatial power scan and the subspace-based MUSIC method.
+
+I am using this result only for the simulation conditions described above. The behaviour can change with the array size, SNR, number of snapshots, source separation and other parameters.
+
+# 16. Complete Processing Flow
 
 The complete processing chain in the current version is:
 
@@ -875,7 +1043,7 @@ S \rightarrow A \rightarrow X = AS + N \rightarrow R_{xx} \rightarrow E,\Lambda 
 
 ---
 
-# 16. Project Structure
+# 17. Project Structure
 
 The current project is organized as:
 
@@ -934,7 +1102,7 @@ Stores the generated experiment results.
 
 ---
 
-# 17. Technologies Used
+# 18. Technologies Used
 
 - Python 3
 
@@ -948,7 +1116,7 @@ Stores the generated experiment results.
 
 ---
 
-# 18. Running the Project
+# 19. Running the Project
 
 Clone the repository:
 
@@ -986,7 +1154,7 @@ The program generates the MUSIC spectrum and saves the result in the `results` f
 
 ---
 
-# 19. What I Want to Add Next
+# 20. What I Want to Add Next
 
 This project is still a work in progress.
 
@@ -1012,7 +1180,7 @@ The longer-term goal is to move from this basic 1D ULA implementation toward mor
 
 ---
 
-# 20. Why I Built This Project
+# 21. Why I Built This Project
 
 I am interested in RF systems, antenna arrays, radar signal processing and sensing.
 

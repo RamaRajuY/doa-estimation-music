@@ -12,6 +12,119 @@ from src.beamforming import calculate_beamforming_spectrum
 # Experiment configuration
 # ============================================================
 
+def calculate_3db_peak_width(
+    angle_grid,
+    spectrum_db,
+    peak_angle,
+    search_window_deg=10.0
+):
+    """
+    Calculate the -3 dB spectral peak width around a source.
+
+    The function first finds the actual local maximum near the
+    expected peak angle, then finds the -3 dB crossing points
+    on both sides using linear interpolation.
+
+    Parameters
+    ----------
+    angle_grid : numpy.ndarray
+        Angle values in degrees.
+
+    spectrum_db : numpy.ndarray
+        Normalized spectrum in dB.
+
+    peak_angle : float
+        Expected source angle.
+
+    search_window_deg : float
+        Search window around the expected source angle.
+
+    Returns
+    -------
+    float
+        -3 dB spectral peak width in degrees.
+    """
+
+    # Find samples inside the local search window.
+    mask = (
+        (angle_grid >= peak_angle - search_window_deg)
+        & (angle_grid <= peak_angle + search_window_deg)
+    )
+
+    local_indices = np.where(mask)[0]
+
+    if len(local_indices) < 3:
+        raise RuntimeError(
+            "Not enough samples in the peak search window."
+        )
+
+    # Find the actual local peak.
+    local_peak_index = local_indices[
+        np.argmax(spectrum_db[local_indices])
+    ]
+
+    threshold = spectrum_db[local_peak_index] - 3.0
+
+    # --------------------------------------------------------
+    # Find left -3 dB crossing
+    # --------------------------------------------------------
+
+    left_index = local_peak_index
+
+    while (
+        left_index > 0
+        and spectrum_db[left_index] > threshold
+    ):
+        left_index -= 1
+
+    if left_index == 0:
+        raise RuntimeError(
+            "Left -3 dB crossing was not found."
+        )
+
+    x1 = angle_grid[left_index]
+    x2 = angle_grid[left_index + 1]
+
+    y1 = spectrum_db[left_index]
+    y2 = spectrum_db[left_index + 1]
+
+    left_crossing = x1 + (
+        (threshold - y1)
+        / (y2 - y1)
+        * (x2 - x1)
+    )
+
+    # --------------------------------------------------------
+    # Find right -3 dB crossing
+    # --------------------------------------------------------
+
+    right_index = local_peak_index
+
+    while (
+        right_index < len(spectrum_db) - 1
+        and spectrum_db[right_index] > threshold
+    ):
+        right_index += 1
+
+    if right_index == len(spectrum_db) - 1:
+        raise RuntimeError(
+            "Right -3 dB crossing was not found."
+        )
+
+    x1 = angle_grid[right_index - 1]
+    x2 = angle_grid[right_index]
+
+    y1 = spectrum_db[right_index - 1]
+    y2 = spectrum_db[right_index]
+
+    right_crossing = x1 + (
+        (threshold - y1)
+        / (y2 - y1)
+        * (x2 - x1)
+    )
+
+    return right_crossing - left_crossing
+
 NUM_ELEMENTS = 8
 NUM_SNAPSHOTS = 1000
 
@@ -101,6 +214,39 @@ music_spectrum_db = 10 * np.log10(
     music_spectrum / np.max(music_spectrum)
 )
 
+# ============================================================
+# Calculate -3 dB beamwidths around the true DOAs
+# ============================================================
+
+print("\n-3 dB Beamwidths")
+
+for true_doa in TRUE_DOAS:
+
+    beamforming_width = calculate_3db_peak_width(
+        ANGLE_GRID,
+        beamforming_spectrum_db,
+        true_doa,
+    )
+
+    music_width = calculate_3db_peak_width(
+        ANGLE_GRID,
+        music_spectrum_db,
+        true_doa,
+    )
+
+    print(
+        f"\nSource at {true_doa:.1f}°"
+    )
+
+    print(
+    f"Conventional Beamforming : "
+    f"{beamforming_width:.3f}°"
+    )
+
+    print(
+    f"MUSIC spectral peak width : "
+    f"{music_width:.3f}°"
+    )
 
 # ============================================================
 # Display experiment information
