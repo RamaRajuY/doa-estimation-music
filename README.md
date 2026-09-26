@@ -996,7 +996,129 @@ This comparison helped me understand the difference between a conventional spati
 
 I am using this result only for the simulation conditions described above. The behaviour can change with the array size, SNR, number of snapshots, source separation and other parameters.
 
-# 16. Complete Processing Flow
+# 16. MUSIC versus ESPRIT Comparison
+
+After implementing ESPRIT as another subspace-based DOA estimation method, I wanted to compare it with the MUSIC algorithm using the same simulated data.
+
+For this experiment, both methods use the same received array data and the same spatial covariance matrix.
+
+The two source directions were:
+
+$$
+
+\theta_1=-20^\circ
+
+$$
+
+and:
+
+$$
+
+\theta_2=35^\circ
+
+$$
+
+The main parameters were:
+
+```text
+
+Number of antennas : 8
+
+Element spacing : 0.5 λ
+
+Snapshots : 1000
+
+Number of sources : 2
+
+True DOAs : -20° and 35°
+
+SNR : 10 dB
+
+Random seed : 42
+
+```
+
+## 16.1 MUSIC
+
+MUSIC estimates the DOAs by scanning an angle grid and finding peaks in the MUSIC pseudospectrum. In this experiment, the angle grid was:
+
+```text
+
+-90° to +90°
+
+Step size : 0.1°
+
+```
+
+The MUSIC implementation is available in:
+
+```text
+
+src/music.py
+
+```
+
+## 16.2 ESPRIT
+
+ESPRIT estimates the DOAs from the signal subspace of the covariance matrix and uses the rotational invariance between two overlapping subarrays. Unlike MUSIC, it does not require an angle scan over a predefined grid.
+
+The ESPRIT implementation is available in:
+
+```text
+
+src/esprit.py
+
+```
+
+## 16.3 Comparison Results
+
+The results from the same simulation were:
+
+```text
+
+MUSIC
+
+Source 1: True = -20.00°, Estimated = -20.00°, Error = 0.00°
+
+Source 2: True = 35.00°, Estimated = 35.10°, Error = 0.10°
+
+MUSIC RMSE = 0.0707°
+
+MUSIC execution time = 43.122 ms
+
+ESPRIT
+
+Source 1: True = -20.00°, Estimated = -20.02°, Error = 0.02°
+
+Source 2: True = 35.00°, Estimated = 35.01°, Error = 0.01°
+
+ESPRIT RMSE = 0.0174°
+
+ESPRIT execution time = 11.178 ms
+
+```
+
+For this particular simulation, both methods estimated the two source directions close to the known values. The measured RMSE and execution time are included only for the conditions used in this experiment and should not be treated as general performance values for all MUSIC and ESPRIT applications.
+
+![MUSIC versus ESPRIT DOA estimation](results/esprit_vs_music.png)
+
+## 16.4 What I observed
+
+Using the same input data makes it easier to see how the two algorithms process the array measurements differently.
+
+MUSIC uses an explicit angular search to form a pseudospectrum, while ESPRIT obtains the direction estimates from the subspace rotational-invariance relationship.
+
+For this test case, the ESPRIT estimates were close to the true DOAs and the measured execution time was lower than the measured MUSIC time. These observations are specific to this implementation, simulation size, hardware, and timing measurement.
+
+The complete comparison is implemented in:
+
+```text
+
+experiments/esprit_vs_music.py
+
+```
+
+# 17. Complete Processing Flow
 
 The complete processing chain in the current version is:
 
@@ -1043,31 +1165,62 @@ S \rightarrow A \rightarrow X = AS + N \rightarrow R_{xx} \rightarrow E,\Lambda 
 
 ---
 
-# 17. Project Structure
+# 18. Project Structure
 
 The current project is organized as:
 
 ```text
+
 doa-estimation-music/
-│
+
 ├── .gitignore
+
 ├── README.md
+
 ├── main.py
-│
+
 ├── experiments/
-│   └── doa_vs_snr.py
-│
+
+│   ├── angular_resolution.py
+
+│   ├── beamforming_vs_music.py
+
+│   ├── doa_vs_snr.py
+
+│   ├── esprit_single_test.py
+
+│   └── esprit_vs_music.py
+
 ├── results/
+
+│   ├── beamforming_vs_music.png
+
+│   ├── doa_error_vs_snr.png
+
+│   ├── esprit_vs_music.png
+
+│   ├── music_angular_resolution_study.png
+
 │   ├── music_spectrum_one_source.png
-│   ├── music_spectrum_two_sources.png
-│   └── doa_error_vs_snr.png
-│
+
+│   └── music_spectrum_two_sources.png
+
 └── src/
+
     ├── array_model.py
+
     ├── signal_generation.py
+
     ├── covariance.py
+
     ├── eigendecomposition.py
-    └── music.py
+
+    ├── music.py
+
+    ├── beamforming.py
+
+    └── esprit.py
+
 ```
 
 Each file has a separate purpose.
@@ -1096,13 +1249,29 @@ Calculates the eigenvalues and eigenvectors.
 
 Calculates the MUSIC pseudospectrum and estimates the DOAs.
 
+### `experiments/`
+
+Contains separate simulation scripts used to test the DOA algorithms under different conditions.
+
+### `esprit.py`
+
+Implements the ESPRIT DOA estimation method.
+
+### `esprit_single_test.py`
+
+Runs a two-source ESPRIT test using the project simulation model.
+
+### `esprit_vs_music.py`
+
+Compares MUSIC and ESPRIT using the same simulated received signal and covariance matrix.
+
 ### `results/`
 
 Stores the generated experiment results.
 
 ---
 
-# 18. Technologies Used
+# 19. Technologies Used
 
 - Python 3
 
@@ -1116,7 +1285,7 @@ Stores the generated experiment results.
 
 ---
 
-# 19. Running the Project
+# 20. Running the Project
 
 Clone the repository:
 
@@ -1154,7 +1323,7 @@ The program generates the MUSIC spectrum and saves the result in the `results` f
 
 ---
 
-# 20. What I Want to Add Next
+# 21. What I Want to Add Next
 
 This project is still a work in progress.
 
@@ -1180,7 +1349,7 @@ The longer-term goal is to move from this basic 1D ULA implementation toward mor
 
 ---
 
-# 21. Why I Built This Project
+# 22. Why I Built This Project
 
 I am interested in RF systems, antenna arrays, radar signal processing and sensing.
 
